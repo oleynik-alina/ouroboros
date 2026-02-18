@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import subprocess
 from typing import Any, Dict, List, Optional
 
@@ -54,7 +55,9 @@ def _get_repo_slug(ctx: ToolContext) -> str:
             return res.stdout.strip()
     except Exception:
         log.debug("Failed to get repo slug from gh", exc_info=True)
-    return "razzant/ouroboros"  # fallback
+    user = os.environ.get("GITHUB_USER", "razzant")
+    repo = os.environ.get("GITHUB_REPO", "ouroboros")
+    return f"{user}/{repo}"
 
 
 # ---------------------------------------------------------------------------

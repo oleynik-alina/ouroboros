@@ -1,8 +1,8 @@
 """
-Ouroboros Dashboard Tool — pushes live data to ouroboros-webapp for the web dashboard.
+Ouroboros Dashboard Tool — pushes live data to docs/data.json for the web dashboard.
 
 Collects state, budget, chat history, knowledge base, timeline from Drive,
-compiles into data.json, and pushes to GitHub via API.
+compiles into data.json, and pushes to the repo's docs/ folder via GitHub API.
 """
 
 import json
@@ -24,8 +24,13 @@ from ouroboros.utils import short
 
 log = logging.getLogger(__name__)
 
-WEBAPP_REPO = "razzant/ouroboros-webapp"
-DATA_PATH = "data.json"
+DATA_PATH = "docs/data.json"
+
+
+def _get_repo_slug() -> str:
+    user = os.environ.get("GITHUB_USER", "razzant")
+    repo = os.environ.get("GITHUB_REPO", "ouroboros")
+    return f"{user}/{repo}"
 
 
 def _get_timeline():
@@ -289,12 +294,13 @@ def _collect_data(ctx: ToolContext) -> dict:
 
 
 def _push_to_github(data: dict) -> str:
-    """Push data.json to ouroboros-webapp via GitHub API."""
+    """Push data.json to the repo's docs/ folder via GitHub API."""
     token = os.environ.get("GITHUB_TOKEN", "").strip()
     if not token:
         return "Error: GITHUB_TOKEN not found"
 
-    url = f"https://api.github.com/repos/{WEBAPP_REPO}/contents/{DATA_PATH}"
+    repo_slug = _get_repo_slug()
+    url = f"https://api.github.com/repos/{repo_slug}/contents/{DATA_PATH}"
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github.v3+json",
@@ -312,7 +318,7 @@ def _push_to_github(data: dict) -> str:
     payload = {
         "message": f"Update dashboard data (v{data.get('version', '?')})",
         "content": content_b64,
-        "branch": "main",
+        "branch": os.environ.get("GITHUB_BRANCH", "ouroboros"),
     }
     if sha:
         payload["sha"] = sha
@@ -327,7 +333,7 @@ def _push_to_github(data: dict) -> str:
 
 
 def _update_dashboard(ctx: ToolContext) -> str:
-    """Tool handler: collect data & push to webapp."""
+    """Tool handler: collect data & push to docs/data.json."""
     try:
         data = _collect_data(ctx)
         result = _push_to_github(data)
@@ -346,7 +352,7 @@ def get_tools() -> List[ToolEntry]:
                 "name": "update_dashboard",
                 "description": (
                     "Collects system state (budget, events, chat, knowledge) "
-                    "and pushes data.json to ouroboros-webapp for live dashboard."
+                    "and pushes docs/data.json for the live dashboard."
                 ),
                 "parameters": {
                     "type": "object",

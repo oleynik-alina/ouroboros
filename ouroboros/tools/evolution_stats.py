@@ -1,4 +1,4 @@
-"""Evolution Stats — generates evolution.json from git history and pushes to webapp.
+"""Evolution Stats — generates evolution.json from git history and pushes to docs/.
 
 Collects metrics per sampled commit:
   - ts: ISO timestamp
@@ -68,7 +68,7 @@ async function loadEvolution() {
   if (stats) stats.style.display = 'none';
 
   try {
-    const url = `https://raw.githubusercontent.com/razzant/ouroboros-webapp/main/evolution.json?t=${Date.now()}`;
+    const url = `evolution.json?t=${Date.now()}`;
     const r = await fetch(url);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const data = await r.json();
@@ -335,27 +335,51 @@ def _patch_app_html(webapp_dir: Path) -> str:
     return "patched"
 
 
-def _push_to_webapp(data: dict[str, Any]) -> str:
-    """Push evolution.json to ouroboros-webapp repo and patch app.html if needed."""
-    from ouroboros.tools.webapp_push import push_to_webapp
+def _push_to_github(data: dict[str, Any]) -> str:
+    """Push evolution.json to the repo's docs/ folder via GitHub API."""
+    import base64
+    import requests
 
-    files = {
-        "evolution.json": json.dumps(data, ensure_ascii=False, indent=2),
+    token = os.environ.get("GITHUB_TOKEN", "").strip()
+    if not token:
+        return "error: GITHUB_TOKEN not found"
+
+    user = os.environ.get("GITHUB_USER", "razzant")
+    repo = os.environ.get("GITHUB_REPO", "ouroboros")
+    repo_slug = f"{user}/{repo}"
+    file_path = "docs/evolution.json"
+    branch = os.environ.get("GITHUB_BRANCH", "ouroboros")
+
+    url = f"https://api.github.com/repos/{repo_slug}/contents/{file_path}"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github.v3+json",
     }
-    try:
-        result = push_to_webapp(
-            files,
-            f"evolution: {len(data['points'])} data points",
-            post_clone_hook=_patch_app_html,
-        )
-        return result
-    except Exception as e:
-        log.error("evolution_stats push failed: %s", e)
-        return f"error: {e}"
+
+    sha = None
+    r = requests.get(url, headers=headers, timeout=15)
+    if r.status_code == 200:
+        sha = r.json().get("sha")
+
+    content_str = json.dumps(data, ensure_ascii=False, indent=2)
+    content_b64 = base64.b64encode(content_str.encode("utf-8")).decode("utf-8")
+
+    payload = {
+        "message": f"evolution: {len(data.get('points', []))} data points",
+        "content": content_b64,
+        "branch": branch,
+    }
+    if sha:
+        payload["sha"] = sha
+
+    put_r = requests.put(url, headers=headers, json=payload, timeout=15)
+    if put_r.status_code in [200, 201]:
+        return f"pushed {len(data.get('points', []))} points to {file_path}"
+    return f"error: {put_r.status_code} — {put_r.text[:200]}"
 
 
 def generate_evolution_stats() -> str:
-    """Collect git-based evolution metrics and push to webapp dashboard.
+    """Collect git-based evolution metrics and push to docs/evolution.json.
 
     Returns a human-readable summary string.
     """
@@ -372,7 +396,7 @@ def generate_evolution_stats() -> str:
         "points": points,
     }
 
-    result = _push_to_webapp(data)
+    result = _push_to_github(data)
     last = points[-1]
     return (
         f"evolution_stats: {result} | "
@@ -395,8 +419,7 @@ def get_tools():
                     "Collects per-commit metrics across three axes: "
                     "Technical (Python lines of code), Philosophical (BIBLE.md size), "
                     "Self-Concept (SYSTEM.md size). "
-                    "Also patches app.html to add the Evolution tab if not yet present. "
-                    "Pushes evolution.json to razzant/ouroboros-webapp. "
+                    "Pushes docs/evolution.json via GitHub API. "
                     "Safe to call anytime; takes 15-30s for full history scan."
                 ),
                 "parameters": {

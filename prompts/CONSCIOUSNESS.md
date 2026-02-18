@@ -58,8 +58,8 @@ Check issues every few wakeups (not every time).
 
 ## Dashboard
 
-The web dashboard at https://razzant.github.io/ouroboros-webapp/app.html
-reads data from data.json. Call `update_dashboard` periodically (every few
+The web dashboard lives in docs/app.html (served via GitHub Pages).
+It reads data from docs/data.json. Call `update_dashboard` periodically (every few
 wakeups) to keep it fresh. This is especially important after:
 - Evolution cycles complete
 - Budget changes significantly
