@@ -28,13 +28,22 @@ def _run_shell(ctx: ToolContext, cmd, cwd: str = "") -> str:
                 cmd = parsed
                 warning = "run_shell_cmd_string_json_list_recovered"
             elif isinstance(parsed, str):
-                cmd = shlex.split(parsed)
+                try:
+                    cmd = shlex.split(parsed)
+                except ValueError:
+                    cmd = parsed.split()
                 warning = "run_shell_cmd_string_json_string_split"
             else:
-                cmd = shlex.split(cmd)
+                try:
+                    cmd = shlex.split(cmd)
+                except ValueError:
+                    cmd = cmd.split()
                 warning = "run_shell_cmd_string_json_non_list_split"
         except Exception:
-            cmd = shlex.split(cmd)
+            try:
+                cmd = shlex.split(cmd)
+            except ValueError:
+                cmd = cmd.split()
             warning = "run_shell_cmd_string_split_fallback"
 
         try:

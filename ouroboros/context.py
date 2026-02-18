@@ -239,6 +239,10 @@ def _build_health_invariants(env: Any) -> str:
                         if ev.get(type_field) != type_value:
                             continue
                         text = ev.get("text", "")
+                        if not text and "event_repr" in ev:
+                            # Historical entries in supervisor.jsonl lack "text";
+                            # try to extract task_id at least for presence detection
+                            text = ev.get("event_repr", "")[:200]
                         if not text:
                             continue
                         text_hash = hashlib.md5(text.encode()).hexdigest()[:12]

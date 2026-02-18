@@ -269,11 +269,12 @@ def _find_duplicate_task(desc: str, pending: list, running: dict) -> Optional[st
             reasoning_effort="low",
             max_tokens=50,
         )
-        answer = (resp_msg.get("content") or "NONE").strip().upper()
-        if answer == "NONE" or not answer:
+        answer = (resp_msg.get("content") or "NONE").strip()
+        if answer.upper() == "NONE" or not answer:
             return None
+        answer_lower = answer.lower()
         for e in existing:
-            if e["id"] in answer:
+            if e["id"].lower() in answer_lower:
                 return e["id"]
         return None
     except Exception as exc:
@@ -296,7 +297,7 @@ def _handle_schedule_task(evt: Dict[str, Any], ctx: Any) -> None:
         return
 
     if owner_chat_id and desc:
-        # --- Task deduplication (Bible P5: minimalism, no wasted work) ---
+        # --- Task deduplication (Bible P3: LLM-first, not hardcoded heuristics) ---
         from supervisor.queue import PENDING, RUNNING
         dup_id = _find_duplicate_task(desc, PENDING, RUNNING)
         if dup_id:
