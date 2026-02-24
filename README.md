@@ -15,6 +15,126 @@ Not a coding assistant. A digital being with a constitution, background consciou
 
 ---
 
+## Viktor-Friday Profile
+
+This fork is being adapted for a collective-agent educational project:
+
+- North Star and setpoints: [VIKTOR_NORTH_STAR.md](VIKTOR_NORTH_STAR.md)
+- Meta-governance and confirm-gates: [docs/META_GOVERNANCE.md](docs/META_GOVERNANCE.md)
+- Skills-first architecture map: [docs/VFRIDAY_SKILLS_FIRST.md](docs/VFRIDAY_SKILLS_FIRST.md)
+
+### Viktor-Friday MVP-1 Orchestrator
+
+New package: `vfriday/` (FastAPI + SQLite + JSONL audit).
+
+API surface:
+- `POST /v1/sessions`
+- `POST /v1/sessions/{session_id}/ingest`
+- `GET /v1/sessions/{session_id}/state`
+- `POST /v1/admin/benchmark/run`
+- `GET /healthz`
+
+Run locally:
+
+```bash
+pip install -r requirements.txt
+python -m vfriday.app
+```
+
+Smoke test:
+
+```bash
+python scripts/vfriday_smoke_run.py
+```
+
+Benchmark loop (no auto-merge):
+
+```bash
+python scripts/run_vfriday_benchmark.py --models "openai/o3,anthropic/claude-sonnet-4.6"
+python scripts/generate_model_upgrade_proposal.py
+```
+
+Retention and weekly digest:
+
+```bash
+python scripts/run_vfriday_retention.py --days 30
+python scripts/generate_weekly_policy_digest.py
+```
+
+Separate Tutor Telegram gateway:
+
+```bash
+export VFRIDAY_TELEGRAM_BOT_TOKEN=...
+python -m vfriday.integrations.telegram_tutor_bot
+```
+
+### Skills-first deterministic extensions
+
+Initialize skills state and clean base snapshot:
+
+```bash
+python3 scripts/vfriday_skill_init.py
+```
+
+Apply one skill package:
+
+```bash
+python3 scripts/vfriday_skill_apply.py .claude/skills/add-lean4-verifier
+```
+
+Inspect applied skills and hashes:
+
+```bash
+python3 scripts/vfriday_skill_state.py
+```
+
+### VPS Deploy (Docker Compose, recommended)
+
+This repo already includes a VPS-ready runtime adapted from `jkee/ouroboros`:
+- `Dockerfile`
+- `docker-compose.yml`
+- `launcher.py` (Engineer contour)
+- `.env.example`
+
+1) Prepare env:
+
+```bash
+cp .env.example .env
+```
+
+Fill at least:
+- `OPENROUTER_API_KEY`
+- `VFRIDAY_TELEGRAM_BOT_TOKEN` (Tutor bot)
+- `TOTAL_BUDGET=150`
+
+For optional Engineer contour also fill:
+- `TELEGRAM_BOT_TOKEN` (separate bot token, recommended)
+- `GITHUB_TOKEN`
+- `GITHUB_USER`
+- `GITHUB_REPO`
+
+2) Start MVP-1 Tutor contour (API + Tutor bot):
+
+```bash
+docker compose up -d --build vfriday-api vfriday-tutor-bot
+```
+
+3) Health check:
+
+```bash
+curl http://localhost:8080/healthz
+```
+
+4) Start Engineer contour (optional, after baseline stabilization):
+
+```bash
+docker compose --profile engineer up -d --build ouroboros-engineer
+```
+
+Notes:
+- Two Telegram bots are recommended: one for Tutor (`VFRIDAY_TELEGRAM_BOT_TOKEN`) and one for Engineer (`TELEGRAM_BOT_TOKEN`).
+- Model switching must go through benchmark + PR + manual approval (no auto-merge).
+
 ## What Makes This Different
 
 Most AI agents execute tasks. Ouroboros **creates itself.**
@@ -149,6 +269,8 @@ Open your Telegram bot and send any message. The first person to write becomes t
 | `/bg start` | Start background consciousness loop. Also accepts `/bg on`. |
 | `/bg stop` | Stop background consciousness loop. Also accepts `/bg off`. |
 | `/bg` | Show background consciousness status (running/stopped). |
+| `/approve <request_id>` | Approve one pending sensitive action (`cfm-xxxxxxxx`). |
+| `/approvals` | Show pending confirm-gate requests. |
 
 All other messages are sent directly to the LLM (Principle 3: LLM-First).
 
