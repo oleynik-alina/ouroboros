@@ -12,13 +12,13 @@ import yaml
 
 
 _DEFAULT_MODELS = {
-    "solver_model": "openai/o3",
-    "tutor_model": "anthropic/claude-sonnet-4.6",
-    "ocr_model": "anthropic/claude-sonnet-4.6",
+    "solver_model": "o3",
+    "tutor_model": "gpt-5-mini",
+    "ocr_model": "gpt-4.1",
     "fallbacks": {
-        "solver": ["google/gemini-3-pro-preview"],
-        "tutor": ["openai/gpt-4.1"],
-        "ocr": ["google/gemini-3-pro-preview"],
+        "solver": ["gpt-5-mini"],
+        "tutor": ["gpt-4.1"],
+        "ocr": ["gpt-4.1-mini"],
     },
 }
 
@@ -135,4 +135,3 @@ def load_settings(repo_root: Path | None = None) -> VFridaySettings:
         orchestrator_url=orchestrator_url,
         telegram_bot_token=telegram_bot_token,
     )
-

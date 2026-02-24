@@ -92,7 +92,7 @@ def solve(
     reasoning_effort: str = "high",
 ) -> SolverResult:
     """Run solver model and return structured output."""
-    if not os.environ.get("OPENROUTER_API_KEY"):
+    if not os.environ.get("OPENAI_API_KEY"):
         return _heuristic_solver(problem_text, working_text, model)
 
     started = time.perf_counter()
@@ -152,4 +152,3 @@ def solve(
         fallback.status = "uncertain"
         fallback.raw = {"error": repr(exc), "mode": "heuristic_after_exception"}
         return fallback
-

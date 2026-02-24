@@ -25,7 +25,7 @@ Copy this prompt into Atlas in browser.
 Ячейка 2 (env):
 - экспортируй:
   VFRIDAY_TELEGRAM_BOT_TOKEN=<PUT_TOKEN>
-  OPENROUTER_API_KEY=<PUT_KEY>
+  OPENAI_API_KEY=<PUT_KEY>
   VFRIDAY_API_HOST=0.0.0.0
   VFRIDAY_API_PORT=8080
   VFRIDAY_ORCHESTRATOR_URL=http://127.0.0.1:8080
@@ -58,4 +58,3 @@ Copy this prompt into Atlas in browser.
 - Проверь, что smoke выводит "SMOKE OK".
 - Дай мне краткий runbook: как перезапустить API и bot после disconnect Colab.
 ```
-
