@@ -9,7 +9,7 @@ from vfriday.schemas import SolverClaim, SolverResult
 def _make_client(monkeypatch):
     tmp = tempfile.mkdtemp()
     monkeypatch.setenv("VFRIDAY_DATA_DIR", tmp)
-    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     app = create_app()
     return TestClient(app), app
 
@@ -120,4 +120,3 @@ def test_budget_guard_blocks_over_cap(monkeypatch):
     )
     res.raise_for_status()
     assert res.json()["status"] == "budget_blocked"
-

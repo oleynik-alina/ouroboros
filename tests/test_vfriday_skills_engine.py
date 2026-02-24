@@ -54,7 +54,7 @@ def test_init_skills_state_creates_state_and_base(tmp_path: Path) -> None:
 def test_apply_add_only_skill(tmp_path: Path) -> None:
     project = tmp_path / "project"
     _write(project / "VERSION", "6.2.0\n")
-    _write(project / ".env.example", "OPENROUTER_API_KEY=\n")
+    _write(project / ".env.example", "OPENAI_API_KEY=\n")
     _write(project / "requirements.txt", "fastapi\n")
     init_skills_state(project)
 

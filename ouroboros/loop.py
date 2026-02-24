@@ -26,7 +26,7 @@ from ouroboros.utils import utc_now_iso, append_jsonl, truncate_for_log, sanitiz
 
 log = logging.getLogger(__name__)
 
-# Pricing from OpenRouter API (2026-02-17). Update periodically via /api/v1/models.
+# Static pricing hints for token-cost estimation.
 _MODEL_PRICING_STATIC = {
     "anthropic/claude-opus-4.6": (5.0, 0.5, 25.0),
     "anthropic/claude-opus-4": (15.0, 1.5, 75.0),
@@ -51,8 +51,7 @@ _pricing_lock = threading.Lock()
 
 def _get_pricing() -> Dict[str, Tuple[float, float, float]]:
     """
-    Lazy-load pricing. On first call, attempts to fetch from OpenRouter API.
-    Falls back to static pricing if fetch fails.
+    Lazy-load pricing. Falls back to static pricing.
     Thread-safe via module-level lock.
     """
     global _pricing_fetched, _cached_pricing
@@ -77,7 +76,7 @@ def _get_pricing() -> Dict[str, Tuple[float, float, float]]:
                 _cached_pricing.update(_live)
         except Exception as e:
             import logging as _log
-            _log.getLogger(__name__).warning("Failed to sync pricing from OpenRouter: %s", e)
+            _log.getLogger(__name__).warning("Failed to sync external pricing: %s", e)
             # Reset flag so we retry next time
             _pricing_fetched = False
 
