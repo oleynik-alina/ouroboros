@@ -1,0 +1,11 @@
+solver_model: openai/o3
+tutor_model: anthropic/claude-sonnet-4.6
+ocr_model: anthropic/claude-sonnet-4.6
+fallbacks:
+  solver:
+    - google/gemini-3-pro-preview
+  tutor:
+    - openai/gpt-4.1
+  ocr:
+    - google/gemini-3-pro-preview
+
