@@ -59,7 +59,7 @@ def compose_hint(
     verifier_disagreement = float(verifier_result.get("disagreement_rate") or 0.0)
     solver_error_type = solver_result.get("error_type")
 
-    if not os.environ.get("OPENROUTER_API_KEY"):
+    if not os.environ.get("OPENAI_API_KEY"):
         msg = _heuristic_hint(solver_error_type, verifier_disagreement)
         flags = ["heuristic_tutor"]
         if verifier_disagreement >= 0.5:
@@ -136,4 +136,3 @@ def compose_hint(
             latency_ms=int((time.perf_counter() - started) * 1000),
             flags=["tutor_fallback_after_exception", type(exc).__name__],
         )
-

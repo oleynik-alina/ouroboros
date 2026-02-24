@@ -21,7 +21,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--models",
-        default="openai/o3,anthropic/claude-sonnet-4.6,google/gemini-3-pro-preview",
+        default="o3,gpt-5-mini,gpt-4.1",
         help="Comma-separated candidate models",
     )
     parser.add_argument("--sample-size", type=int, default=20, help="Number of non-holdout cases to evaluate")

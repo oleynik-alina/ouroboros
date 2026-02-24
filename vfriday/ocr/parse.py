@@ -18,7 +18,7 @@ def _hash_image(image_base64: str | None) -> str:
 
 
 def _vlm_ocr(image_base64: str, model: str) -> Tuple[str, Dict[str, float]]:
-    if not image_base64 or not os.environ.get("OPENROUTER_API_KEY"):
+    if not image_base64 or not os.environ.get("OPENAI_API_KEY"):
         return "", {"cost": 0.0}
     prompt = (
         "Transcribe the math/physics content in this image.\n"
@@ -89,4 +89,3 @@ def prepare_ocr_payload(
         usage=usage,
         notes=notes,
     )
-
